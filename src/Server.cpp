@@ -1,5 +1,7 @@
 #include "Server.h"
 #include <civetweb.h>
+#include <iostream>
+#include <string.h>
 
 using namespace std;
 
@@ -33,9 +35,13 @@ namespace {
                                  reply_status_code);
     }
 
-    int _callback_log_message(const struct mg_connection *, const char *message) { }
+    int _callback_log_message(const struct mg_connection *, const char *message) {
+        cout << "LOG MESSAGE: " << message;
+    }
 
-    int _callback_log_access(const struct mg_connection *, const char *message) { }
+    int _callback_log_access(const struct mg_connection *, const char *message) {
+        cout << "LOG ACCESS: " << message;
+    }
 
     int _callback_init_ssl(void *ssl_context, void *user_data) { }
 
@@ -71,6 +77,41 @@ Server::Server(vector<string> options) : _context(nullptr), _options(options) {
 
 Server::~Server() {
     close();
+}
+
+
+auto Server::Option::getType() const -> Type {
+    auto option = mg_get_valid_options();
+    while(option && option->name) {
+        if(name == std::string(option->name, strnlen(option->name, 128))) {
+            return Type(option->type);
+        }
+        ++option;
+    }
+
+    return UNKNOWN;
+}
+
+//for (i = 0; options[i].name != NULL; i++) {
+//value = mg_get_option(ctx, options[i].name);
+//fprintf(fp,
+//"# %s %s\n",
+//options[i].name,
+//value ? value : "<value>");
+//}
+
+auto Server::Option::all() -> std::vector<Option> {
+    std::vector<Server::Option> options;
+    auto option = mg_get_valid_options();
+    while(option && option->name) {
+
+        auto name = string(option->name, strnlen(option->name, 128));
+        auto value = option->default_value ? string(option->default_value, strnlen(option->default_value, 128)) : string();
+
+        options.push_back({name, value});
+        ++option;
+    }
+    return options;
 }
 
 

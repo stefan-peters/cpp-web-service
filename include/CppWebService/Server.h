@@ -17,6 +17,26 @@ class Server {
 
 public:
 
+    struct Option {
+
+        enum Type {
+            UNKNOWN = 0x0,
+            NUMBER = 0x1,
+            STRING = 0x2,
+            FILE = 0x3,
+            DIRECTORY = 0x4,
+            BOOLEAN = 0x5,
+            EXT_PATTERN = 0x6
+        };
+
+        Type getType() const;
+
+        static std::vector<Option> all();
+
+        std::string name;
+        std::string value;
+    };
+
     struct Exception : public std::runtime_error  {
         Exception(const std::string &msg) : std::runtime_error(msg) {}
     };
